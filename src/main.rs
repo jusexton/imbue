@@ -90,7 +90,7 @@ mod server_tests {
         let response = client.post("/imbue").json(&body).dispatch();
         assert_eq!(response.status(), Status::Ok);
 
-        let result: ImbueResponse = response.into_json().unwrap();
+        let result = response.into_json::<ImbueResponse>().unwrap();
         let expected_result = vec![
             DataPoint::new(2.0, 2.0),
             DataPoint::new(4.0, 4.0)
@@ -112,7 +112,7 @@ mod server_tests {
         let response = client.post("/imbue").json(&body).dispatch();
         assert_eq!(response.status(), Status::Ok);
 
-        let result: ImbueResponse = response.into_json().unwrap();
+        let result = response.into_json::<ImbueResponse>().unwrap();
         let expected_result = vec![
             DataPoint::new(2.0, 0.0),
             DataPoint::new(4.0, 0.0)
@@ -134,7 +134,7 @@ mod server_tests {
         let response = client.post("/imbue").json(&body).dispatch();
         assert_eq!(response.status(), Status::Ok);
 
-        let result: ImbueResponse = response.into_json().unwrap();
+        let result = response.into_json::<ImbueResponse>().unwrap();
         let expected_result = vec![
             DataPoint::new(2.0, 1.0),
             DataPoint::new(4.0, 3.0)
