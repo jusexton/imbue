@@ -12,7 +12,13 @@ mod imbue;
 #[serde(crate = "rocket::serde")]
 struct ImbueRequest {
     dataset: Vec<DataPoint>,
-    strategy: ImbueStrategy
+    strategy: ImbueStrategy,
+}
+
+impl ImbueRequest {
+    fn new(dataset: Vec<DataPoint>, strategy: ImbueStrategy) -> Self {
+        ImbueRequest { dataset, strategy }
+    }
 }
 
 impl From<ImbueRequest> for ImbueContext {
@@ -58,4 +64,81 @@ fn imbue_data(request: Json<ImbueRequest>) -> Json<ImbueResponse> {
 #[launch]
 fn rocket() -> _ {
     rocket::build().mount("/", routes![imbue_data])
+}
+
+#[cfg(test)]
+mod server_tests {
+    use rocket::http::Status;
+    use rocket::local::blocking::Client;
+    use rocket::serde::json::Json;
+
+    use crate::{DataPoint, ImbueRequest, ImbueResponse, ImbueStrategy};
+
+    use super::rocket;
+
+    #[test]
+    fn test_average_imbue() {
+        let client = Client::tracked(rocket()).expect("Valid rocket instance required");
+        let body = ImbueRequest::new(
+            vec![
+                DataPoint::new(1.0, 1.0),
+                DataPoint::new(3.0, 3.0),
+                DataPoint::new(5.0, 5.0),
+            ],
+            ImbueStrategy::Average,
+        );
+        let response = client.post("/imbue").json(&body).dispatch();
+        assert_eq!(response.status(), Status::Ok);
+
+        let result: ImbueResponse = response.into_json().unwrap();
+        let expected_result = vec![
+            DataPoint::new(2.0, 2.0),
+            DataPoint::new(4.0, 4.0)
+        ];
+        assert_eq!(result.dataset, expected_result)
+    }
+
+    #[test]
+    fn test_zeroed_imbue() {
+        let client = Client::tracked(rocket()).expect("Valid rocket instance required");
+        let body = ImbueRequest::new(
+            vec![
+                DataPoint::new(1.0, 1.0),
+                DataPoint::new(3.0, 3.0),
+                DataPoint::new(5.0, 5.0),
+            ],
+            ImbueStrategy::Zeroed,
+        );
+        let response = client.post("/imbue").json(&body).dispatch();
+        assert_eq!(response.status(), Status::Ok);
+
+        let result: ImbueResponse = response.into_json().unwrap();
+        let expected_result = vec![
+            DataPoint::new(2.0, 0.0),
+            DataPoint::new(4.0, 0.0)
+        ];
+        assert_eq!(result.dataset, expected_result)
+    }
+
+    #[test]
+    fn test_last_known_imbue() {
+        let client = Client::tracked(rocket()).expect("Valid rocket instance required");
+        let body = ImbueRequest::new(
+            vec![
+                DataPoint::new(1.0, 1.0),
+                DataPoint::new(3.0, 3.0),
+                DataPoint::new(5.0, 5.0),
+            ],
+            ImbueStrategy::LastKnown,
+        );
+        let response = client.post("/imbue").json(&body).dispatch();
+        assert_eq!(response.status(), Status::Ok);
+
+        let result: ImbueResponse = response.into_json().unwrap();
+        let expected_result = vec![
+            DataPoint::new(2.0, 1.0),
+            DataPoint::new(4.0, 3.0)
+        ];
+        assert_eq!(result.dataset, expected_result)
+    }
 }
