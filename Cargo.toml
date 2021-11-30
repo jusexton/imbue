@@ -2,6 +2,10 @@
 name = "imbue"
 version = "0.1.0"
 edition = "2018"
+license = "MIT"
+repository = "https://github.com/JSextonn/imbue"
+description = "Lightning quick dataset imbuing framework for making sure your data is ready for presentation!"
+readme = "README.md"
 
 [dependencies]
 
