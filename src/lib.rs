@@ -1,7 +1,17 @@
 use std::collections::{HashMap, HashSet};
 use std::ops::RangeInclusive;
 
-use rocket::serde::{Deserialize, Serialize};
+#[derive(Debug, PartialEq, Clone, Copy)]
+pub struct DataPoint {
+    x: f64,
+    y: f64,
+}
+
+impl DataPoint {
+    pub fn new(x: f64, y: f64) -> Self {
+        DataPoint { x, y }
+    }
+}
 
 pub struct ImbueContext {
     dataset: Vec<DataPoint>,
@@ -52,20 +62,7 @@ fn min_and_max(mut accumulator: (f64, f64), item: f64) -> (f64, f64) {
     accumulator
 }
 
-#[derive(Serialize, Deserialize, Copy, Clone, Debug, PartialEq)]
-#[serde(crate = "rocket::serde")]
-pub struct DataPoint {
-    x: f64,
-    y: f64,
-}
-
-impl DataPoint {
-    pub fn new(x: f64, y: f64) -> Self {
-        DataPoint { x, y }
-    }
-}
-
-pub fn average_imbue(context: &ImbueContext) -> Vec<DataPoint> {
+pub fn average(context: &ImbueContext) -> Vec<DataPoint> {
     let imbue_count = context.imbue_count;
     if imbue_count == 0 {
         return vec![];
@@ -105,7 +102,7 @@ fn average_imbue_window(window: (DataPoint, DataPoint)) -> Vec<DataPoint> {
     missing
 }
 
-pub fn zeroed_imbue(context: &ImbueContext) -> Vec<DataPoint> {
+pub fn zeroed(context: &ImbueContext) -> Vec<DataPoint> {
     let imbue_count = context.imbue_count;
     if imbue_count == 0 {
         return vec![];
@@ -119,7 +116,7 @@ pub fn zeroed_imbue(context: &ImbueContext) -> Vec<DataPoint> {
         .collect();
 }
 
-pub fn last_known_imbue(context: &ImbueContext) -> Vec<DataPoint> {
+pub fn last_known(context: &ImbueContext) -> Vec<DataPoint> {
     let imbue_count = context.imbue_count;
     if imbue_count == 0 {
         return vec![];
@@ -145,14 +142,13 @@ fn dataset_map(dataset: &Vec<DataPoint>) -> HashMap<i64, f64> {
 
 #[cfg(test)]
 mod tests {
-    use crate::imbue::{average_imbue, last_known_imbue, zeroed_imbue, ImbueContext};
-    use crate::DataPoint;
+    use crate::{DataPoint, ImbueContext};
 
     #[test]
     fn test_average_imbue() {
         let dataset = vec![DataPoint::new(1.0, 123.0), DataPoint::new(5.0, 43.0)];
         let context = ImbueContext::new(dataset);
-        let imbued_dataset = average_imbue(&context);
+        let imbued_dataset = crate::average(&context);
 
         let expected_dataset: Vec<DataPoint> = vec![
             DataPoint::new(2.0, 103.0),
@@ -170,7 +166,7 @@ mod tests {
             DataPoint::new(8.0, 80.0),
         ];
         let context = ImbueContext::new(dataset);
-        let imbued_dataset = average_imbue(&context);
+        let imbued_dataset = crate::average(&context);
 
         let expected_dataset: Vec<DataPoint> = vec![
             DataPoint::new(2.0, 103.0),
@@ -186,7 +182,7 @@ mod tests {
     fn test_average_imbue_with_flat_average() {
         let dataset = vec![DataPoint::new(1.0, 123.0), DataPoint::new(5.0, 123.0)];
         let context = ImbueContext::new(dataset);
-        let imbued_dataset = average_imbue(&context);
+        let imbued_dataset = crate::average(&context);
 
         let expected_dataset: Vec<DataPoint> = vec![
             DataPoint::new(2.0, 123.0),
@@ -200,7 +196,7 @@ mod tests {
     fn test_zeroed_imbue() {
         let dataset = vec![DataPoint::new(1.0, 123.0), DataPoint::new(5.0, 43.0)];
         let context = ImbueContext::new(dataset);
-        let imbued_dataset = zeroed_imbue(&context);
+        let imbued_dataset = crate::zeroed(&context);
 
         let expected_dataset = vec![
             DataPoint::new(2.0, 0.0),
@@ -218,7 +214,7 @@ mod tests {
             DataPoint::new(5.0, 43.0),
         ];
         let context = ImbueContext::new(dataset);
-        let imbued_dataset = zeroed_imbue(&context);
+        let imbued_dataset = crate::zeroed(&context);
 
         let expected_dataset = vec![
             DataPoint::new(-4.0, 0.0),
@@ -242,7 +238,7 @@ mod tests {
             DataPoint::new(4.0, 56.0),
         ];
         let context = ImbueContext::new(dataset);
-        let imbued_dataset = last_known_imbue(&context);
+        let imbued_dataset = crate::last_known(&context);
 
         let expected_dataset: Vec<DataPoint> = vec![
             DataPoint::new(2.0, 123.0),
@@ -262,7 +258,7 @@ mod tests {
             DataPoint::new(7.0, 84.0),
         ];
         let context = ImbueContext::new(dataset);
-        let imbued_dataset = last_known_imbue(&context);
+        let imbued_dataset = crate::last_known(&context);
 
         let expected_dataset: Vec<DataPoint> = vec![
             DataPoint::new(-1.0, 50.5),
