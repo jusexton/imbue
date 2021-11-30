@@ -3,8 +3,8 @@ use std::ops::RangeInclusive;
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub struct DataPoint {
-    x: f64,
-    y: f64,
+    pub x: f64,
+    pub y: f64,
 }
 
 impl DataPoint {
@@ -14,11 +14,11 @@ impl DataPoint {
 }
 
 pub struct ImbueContext {
-    dataset: Vec<DataPoint>,
-    total_count: usize,
-    imbue_count: usize,
-    axis_min: f64,
-    axis_max: f64,
+    pub dataset: Vec<DataPoint>,
+    pub total_count: usize,
+    pub imbue_count: usize,
+    pub axis_min: f64,
+    pub axis_max: f64,
 }
 
 impl ImbueContext {
