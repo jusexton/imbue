@@ -43,7 +43,7 @@ impl ImbueContext {
         self.dataset.iter().map(|data| data.x as i64).collect()
     }
 
-    fn axis_min_and_max(dataset: &Vec<DataPoint>) -> (f64, f64) {
+    fn axis_min_and_max(dataset: &[DataPoint]) -> (f64, f64) {
         return dataset
             .iter()
             .map(|data| data.x)
@@ -109,11 +109,11 @@ pub fn zeroed(context: &ImbueContext) -> Vec<DataPoint> {
     }
 
     let known_x = context.known_x();
-    return context
+    context
         .axis_range()
-        .filter(|x| !known_x.contains(&x))
+        .filter(|x| !known_x.contains(x))
         .map(|x| DataPoint::new(x as f64, 0.0))
-        .collect();
+        .collect()
 }
 
 pub fn last_known(context: &ImbueContext) -> Vec<DataPoint> {
@@ -127,7 +127,7 @@ pub fn last_known(context: &ImbueContext) -> Vec<DataPoint> {
     let mut last_known = 0.0;
     for x in context.axis_range() {
         if dataset_map.contains_key(&x) {
-            last_known = dataset_map.get(&x).unwrap().clone();
+            last_known = *dataset_map.get(&x).unwrap();
         } else {
             imbued_dataset.push(DataPoint::new(x as f64, last_known))
         }
@@ -136,7 +136,7 @@ pub fn last_known(context: &ImbueContext) -> Vec<DataPoint> {
     imbued_dataset
 }
 
-fn dataset_map(dataset: &Vec<DataPoint>) -> HashMap<i64, f64> {
+fn dataset_map(dataset: &[DataPoint]) -> HashMap<i64, f64> {
     dataset.iter().map(|data| (data.x as i64, data.y)).collect()
 }
 
