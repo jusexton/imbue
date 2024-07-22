@@ -1,7 +1,11 @@
 use std::collections::{HashMap, HashSet};
 use std::ops::RangeInclusive;
 
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
+
 #[derive(Debug, PartialEq, Clone, Copy)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct DataPoint {
     pub x: f64,
     pub y: f64,

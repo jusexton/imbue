@@ -1,6 +1,6 @@
 [package]
 name = "imbue"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2018"
 license = "MIT"
 repository = "https://github.com/JSextonn/imbue"
@@ -8,4 +8,7 @@ description = "Lightning quick dataset imbuing framework for making sure your da
 readme = "README.md"
 
 [dependencies]
+serde = { version = "1.0.204", features = ["derive"], optional = true }
 
+[features]
+serde = ["dep:serde"]
